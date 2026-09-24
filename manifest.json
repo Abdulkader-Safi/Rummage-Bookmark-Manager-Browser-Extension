@@ -1,19 +1,55 @@
 {
   "manifest_version": 3,
-  "name": "Bookmark Manager",
-  "version": "1.0",
-  "description": "Opens a full page listing all your bookmarks.",
+  "name": "Rummage",
+  "version": "0.2.0",
+  "description": "Find and clean up thousands of Chrome bookmarks. Search saved page text, catch dead links and duplicates, all on your computer.",
+  "icons": {
+    "16": "icons/rummage-16.png",
+    "32": "icons/rummage-32.png",
+    "48": "icons/rummage-48.png",
+    "128": "icons/rummage-128.png"
+  },
   "permissions": [
     "bookmarks",
-    "favicon"
+    "favicon",
+    "storage",
+    "unlimitedStorage",
+    "history",
+    "alarms",
+    "tabs",
+    "tabGroups",
+    "scripting",
+    "activeTab",
+    "downloads"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
   "action": {
-    "default_title": "Open bookmarks"
+    "default_title": "Open Rummage"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "chrome_url_overrides": {
     "bookmarks": "page.html"
+  },
+  "omnibox": {
+    "keyword": "rm"
+  },
+  "commands": {
+    "save-page": {
+      "suggested_key": {
+        "default": "Alt+S"
+      },
+      "description": "Save this page"
+    },
+    "command-bar": {
+      "suggested_key": {
+        "default": "Alt+K"
+      },
+      "description": "Open the command bar"
+    }
   }
 }

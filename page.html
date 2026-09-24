@@ -2,81 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Bookmarks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rummage</title>
+  <link rel="icon" href="icons/rummage-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@600;800&family=Funnel+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="page.css">
 </head>
-<body>
-  <aside class="sidebar">
-    <div class="brand">
-      <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 3h12v18l-6-4-6 4z" fill="currentColor"/></svg>
-      </div>
-      <span>Bookmarks</span>
+<body class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><img class="mark" src="icons/brand-mark.svg" alt=""><span>rummage</span></div>
+    <nav id="nav" aria-label="Library"></nav>
+    <div class="spacer"></div>
+    <div class="sync-card">
+      <span class="i i-sync" aria-hidden="true"></span>
+      <div><b>Synced with Chrome</b><span id="sync-note">Both ways</span></div>
     </div>
-    <nav id="folders" aria-label="Folders"></nav>
-    <form id="new-folder" class="new-folder">
-      <input id="new-folder-name" placeholder="New folder name" aria-label="New folder name" required>
-      <button class="btn btn-dark" type="submit">Add</button>
-    </form>
-    <p class="hint">Drag links onto a folder to move them.</p>
   </aside>
 
   <main>
     <header class="top">
-      <label class="search">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <input id="search" type="search" placeholder="Search all bookmarks" autofocus>
+      <button class="btn btn-quiet btn-round menu-btn" id="menu-btn" type="button" aria-label="Show folders"><span class="i i-library" aria-hidden="true"></span></button>
+      <label class="search-field">
+        <span class="i i-search" aria-hidden="true"></span>
+        <input id="search" type="search" autocomplete="off" aria-label="Search bookmarks">
+        <span class="kbd" id="search-kbd" title="Open the command bar"></span>
       </label>
-      <button class="btn btn-white" id="import-btn" type="button">Import</button>
-      <button class="btn btn-dark" id="export-btn" type="button">Export JSON</button>
-      <input id="import-file" type="file" accept=".json,application/json" hidden>
+      <button class="btn btn-quiet" id="import-btn" type="button"><span class="i i-import" aria-hidden="true"></span><span class="label-text">Import</span></button>
+      <button class="btn btn-primary" id="add-btn" type="button"><span class="i i-plus" aria-hidden="true"></span><span class="label-text">Add link</span></button>
+      <button class="btn btn-quiet btn-round" id="settings-btn" type="button" aria-label="Settings"><span class="i i-sliders" aria-hidden="true"></span></button>
+      <input id="import-file" type="file" accept=".json,.html,.htm,.csv" hidden>
     </header>
-
-    <section class="card list-card">
-      <div class="list-head">
-        <div>
-          <h1 id="list-title">All bookmarks</h1>
-          <p class="crumbs" id="crumbs"></p>
-        </div>
-        <span class="chip" id="list-count"></span>
-      </div>
-
-      <div class="toolbar">
-        <label class="check-all"><input type="checkbox" id="select-all"> Select all</label>
-        <div class="chips" id="filters" role="group" aria-label="Filter">
-          <button class="chip" data-filter="all">All</button>
-          <button class="chip" data-filter="week">This week</button>
-          <button class="chip" data-filter="month">This month</button>
-          <button class="chip" data-filter="older">Older than a year</button>
-          <button class="chip" data-filter="dupes">Duplicates <span id="dupe-count"></span></button>
-        </div>
-        <label class="sort">Sort
-          <select id="sort">
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="az">Name A to Z</option>
-            <option value="za">Name Z to A</option>
-            <option value="site">Website</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="bulk" id="bulk" hidden>
-        <strong id="bulk-count"></strong>
-        <label>Move to <select id="move-to"></select></label>
-        <button class="btn btn-white" id="bulk-export" type="button">Export selected</button>
-        <button class="btn btn-white danger" id="bulk-delete" type="button">Delete</button>
-        <button class="link" id="bulk-clear" type="button">Clear</button>
-      </div>
-
-      <ul id="list"></ul>
-      <p class="empty" id="empty" hidden>No bookmarks match.</p>
-    </section>
-    <div class="toast" id="toast" role="status" hidden></div>
+    <div id="view" style="display: contents"></div>
   </main>
-  <script src="page.js"></script>
+
+  <div class="welcome-view" id="welcome" hidden></div>
+
+  <div class="bulk" id="bulk" hidden>
+    <strong id="bulk-count"></strong>
+    <select id="bulk-move" aria-label="Move to folder"></select>
+    <input id="bulk-tag" placeholder="Add a tag" aria-label="Add a tag to the selected links">
+    <button class="btn btn-quiet" id="bulk-group" type="button">Open as tab group</button>
+    <button class="btn btn-quiet" id="bulk-export" type="button">Export</button>
+    <button class="btn btn-accent" id="bulk-bin" type="button"><span class="i i-trash" aria-hidden="true"></span>Move to bin</button>
+    <button class="btn btn-quiet btn-round" id="bulk-clear" type="button" aria-label="Clear selection"><span class="i i-close" aria-hidden="true"></span></button>
+  </div>
+
+  <div class="toast" id="toast" role="status" hidden><span id="toast-text"></span><button class="link" id="toast-undo" type="button" hidden>Undo</button></div>
+
+  <script type="module" src="page.js"></script>
 </body>
 </html>
