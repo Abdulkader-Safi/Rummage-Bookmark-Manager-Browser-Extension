@@ -12,6 +12,7 @@
   --raw-on-dark: #F3F6EF;
   --raw-red: #C8412B;
   --raw-amber: #E09C00;
+  --raw-sage: #B9D7C4;
 
   --surface-page: var(--raw-paper);
   --surface-card: var(--raw-white);
@@ -29,6 +30,7 @@
   --border-subtle: var(--raw-line);
   --status-danger: var(--raw-red);
   --status-warning: var(--raw-amber);
+  --surface-sage: var(--raw-sage);
 
   --radius-pill: 999px;
   --radius-panel: 32px;
@@ -202,12 +204,17 @@ main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 .gauge-head { display: flex; align-items: center; gap: 16px; }
 .gauge-head > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .gauge-bar { display: flex; gap: 6px; }
-.gauge-bar button { display: flex; flex-direction: column; gap: 10px; min-width: 88px; padding: 0; border: 0; background: none; text-align: left; }
+.gauge-bar button { display: flex; flex-direction: column; gap: 10px; min-width: 112px; padding: 0; border: 0; background: none; text-align: left; }
 .gauge-bar button::before { content: ""; width: 100%; height: 44px; border-radius: var(--radius-tight); background: var(--surface-sunken); }
+.gauge-bar button::before { transition: filter 0.15s; }
+.gauge-bar button:hover::before { filter: brightness(0.92); }
+.gauge-bar .kept::before { background: var(--surface-brand); }
+.gauge-bar .inbox::before { background: var(--status-warning); }
+.gauge-bar .never::before { background: var(--surface-sage); }
 .gauge-bar .twice::before { background: var(--surface-dark); }
 .gauge-bar .dead::before { background: var(--surface-accent); }
 .gauge-bar b { display: block; font: 600 20px/1.2 var(--font-display); letter-spacing: -0.01em; }
-.gauge-bar span { color: var(--text-secondary); font-size: 13px; font-weight: 500; }
+.gauge-bar span { color: var(--text-secondary); font-size: 13px; font-weight: 500; white-space: nowrap; }
 
 /* Bookmark rows */
 .list-card { display: flex; flex-direction: column; gap: 8px; padding: 8px; }
