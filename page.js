@@ -71,10 +71,6 @@ const scheduleLoad = () => { clearTimeout(loadTimer); loadTimer = setTimeout(asy
 /* Rendering */
 
 function render() {
-  const welcome = ui.view === "welcome";
-  document.body.className = welcome ? "welcome" : "app";
-  $("welcome").hidden = !welcome;
-  if (welcome) return renderWelcome();
   $("search").placeholder = `Search ${plural(lib.bookmarks.length, "bookmark")}: titles, notes${settings.pageSearch ? " and the text of every saved page" : " and addresses"}`;
   $("sync-note").textContent = `Both ways, updated ${sinceText(loadedAt)}`;
   renderNav();
@@ -167,7 +163,7 @@ async function go(view, extra = {}) {
   Object.assign(ui, { view, focus: null }, extra);
   if (ui.q) { ui.q = ""; $("search").value = ""; }
   selected.clear();
-  if (view !== "welcome") await load();
+  await load();
   if (view === "cleanup") preselect();
   render();
   scrollTo(0, 0);
@@ -241,7 +237,7 @@ function refreshBoxes() {
 
 function updateBulk() {
   const picking = !ui.q && ["cleanup", "bin"].includes(ui.view);
-  $("bulk").hidden = picking || !selected.size || ["settings", "welcome"].includes(ui.view);
+  $("bulk").hidden = picking || !selected.size || ui.view === "settings";
   $("bulk-count").textContent = `${n(selected.size)} selected`;
   const inView = current.items.filter((b) => selected.has(b.id)).length;
   $("select-all")?.setAttribute("aria-checked", !inView ? "false" : inView === current.items.length ? "true" : "mixed");
@@ -896,76 +892,6 @@ async function importFile(file) {
   toast(count ? `Imported ${plural(count, "link")} into "${folder.title}"` : "No bookmarks found in that file");
 }
 
-/* First run */
-
-let welcomeTimer, welcomeStart;
-
-async function renderWelcome() {
-  clearTimeout(welcomeTimer);
-  const web = new Set(lib.bookmarks.filter((b) => isWeb(b.url)).map((b) => b.norm));
-  const [pageKeys, links, { recent = [] }, granted] = await Promise.all([db.keys("pages"), db.all("links"), chrome.storage.local.get("recent"), chrome.permissions.contains(ALL)]);
-  const read = new Set(pageKeys.filter((k) => web.has(k)));
-  // Pages that failed or had no text count as done for the reading step.
-  for (const [k, l] of links) if (web.has(k) && (l.noText || l.code === 0 || l.code >= 400)) read.add(k);
-  const checked = [...links.keys()].filter((k) => web.has(k)).length;
-  const on = granted && (settings.pageSearch || settings.linkChecks);
-  const total = web.size || 1;
-
-  const jobs = [settings.pageSearch && read.size / total, settings.linkChecks && checked / total].filter((x) => x !== false);
-  const pct = on && jobs.length ? Math.floor((jobs.reduce((a, b) => a + b, 0) / jobs.length) * 100) : 0;
-  const done = read.size + checked;
-  welcomeStart ??= { t: Date.now(), done };
-  const rate = (done - welcomeStart.done) / (Date.now() - welcomeStart.t);
-  const left = (jobs.length * total - done) / rate / 60000;
-  const leftText = pct >= 100 ? "All done" : rate > 0 && Number.isFinite(left) ? `About ${Math.max(1, Math.round(left))} ${Math.round(left) <= 1 ? "minute" : "minutes"} left` : "Starting up";
-
-  const stepState = [
-    { title: "Read the list", text: `${n(lib.bookmarks.length)} of ${n(lib.bookmarks.length)}`, done: true },
-    { title: "Reading page text", text: settings.pageSearch ? `${n(read.size)} of ${n(web.size)}` : "Off", done: settings.pageSearch && read.size >= web.size, frac: read.size / total, off: !settings.pageSearch },
-    { title: "Checking links", text: settings.linkChecks ? `${n(checked)} of ${n(web.size)}` : "Off", done: settings.linkChecks && checked >= web.size, frac: checked / total, off: !settings.linkChecks },
-    { title: "Finding duplicates", text: `${plural(groups.length, "group")} found`, done: true },
-  ];
-  const now = on ? stepState.findIndex((s) => !s.done && !s.off) : -1;
-
-  const intro = on
-    ? "They stay in Chrome, in the same folders, and keep syncing. You switched on page search, so Rummage reads each page once and keeps the text on this computer. Each site sees one normal visit."
-    : "They stay in Chrome, in the same folders, and keep syncing. Turn on page search and Rummage reads each page once and keeps the text on this computer, so you can search what a page said. Each site sees one normal visit, without your cookies.";
-
-  $("welcome").replaceChildren(
-    h("div", { className: "welcome-top" },
-      h("div", { className: "brand" }, h("img", { className: "mark", src: "icons/brand-mark.svg", alt: "" }), h("span", { textContent: "rummage" })),
-      on && pct < 100 && h("p", { className: "muted", style: "font-weight: 500; font-size: 14px", textContent: "You can close this tab. Reading keeps going in the background." }),
-      h("button", { className: "btn btn-quiet", type: "button", onclick: () => go("all") }, icon("library"), "Open the library")),
-    h("section", { className: "import-panel" },
-      h("div", { className: "import-head" },
-        h("div", {}, h("h1", { textContent: `Found ${plural(lib.bookmarks.length, "bookmark")} in Chrome.` }), h("p", { textContent: intro }),
-          !on && h("div", { className: "actions", style: "margin-top: 12px" },
-            h("button", { className: "btn btn-accent", type: "button", onclick: async () => {
-              if (!(await chrome.permissions.request(ALL))) return toast("Chrome did not grant access, so page search stays off");
-              settings = await saveSettings({ pageSearch: true, linkChecks: true });
-              try { await chrome.runtime.sendMessage("crawl"); } catch {}
-              welcomeStart = null;
-              renderWelcome();
-            } }, icon("search"), "Turn on page search and link checks"),
-            h("button", { className: "quiet-link", style: "color: var(--text-on-dark); background: none; border: 0; text-decoration: underline; font-weight: 500", type: "button", textContent: "Not now", onclick: () => go("all") }))),
-        on && h("div", { className: "pct" }, h("b", { textContent: `${pct}%` }), h("span", { textContent: leftText }))),
-      h("div", { className: "steps" }, stepState.map((s, i) => h("div", { className: `step${i === now ? " now" : ""}` },
-        h("div", { className: "num" }, String(i + 1), s.done && icon("check")),
-        h("div", {}, h("h3", { textContent: s.title }), h("p", { textContent: s.text })),
-        i === now && h("div", { className: "progress" }, h("div", { style: `width: ${Math.round(s.frac * 100)}%` }))))),
-      on && recent.length > 0 && h("div", { className: "feed" }, h("p", { textContent: "Reading now" }),
-        recent.map((r) => h("div", {}, fav(`https://${r.url}`), h("span", { textContent: r.url }), h("span", { textContent: r.words ? `${n(r.words)} words` : r.code ? `${r.code}` : "No answer" }))))),
-    h("div", { className: "sources" },
-      h("h3", { textContent: "Also bring in" }),
-      source(h("img", { className: "fav", src: "icons/firefox.svg", alt: "" }), "Firefox", "Import its bookmarks HTML file", () => $("import-file").click()),
-      source(icon("globe"), "HTML export", "From Safari, Edge or Arc", () => $("import-file").click()),
-      source(icon("import"), "Raindrop or Pocket", "CSV and HTML export files", () => $("import-file").click()),
-      source(icon("sync"), "Keep syncing", "Chrome changes flow both ways", () => chrome.tabs.create({ url: "chrome://settings/syncSetup" }))));
-
-  if (ui.view === "welcome" && on && pct < 100) welcomeTimer = setTimeout(renderWelcome, 2500);
-}
-
-const source = (lead, title, text, fn) => h("button", { className: "card source", type: "button", onclick: fn }, lead, h("div", {}, h("b", { textContent: title }), h("span", { textContent: text })), icon("arrow"));
 
 /* Overlays */
 
@@ -1009,18 +935,17 @@ $("toast-undo").onclick = async () => {
   await fn?.();
 };
 
-/* Routing: #q=..&scope=.., #cleanup, #settings, #welcome, #bin */
+/* Routing: #q=..&scope=.., #cleanup, #settings, #bin, #inbox */
 
 function applyHash(hash) {
   const raw = hash.replace(/^#/, "");
   const p = new URLSearchParams(raw);
   if (p.has("q")) {
-    if (ui.view === "welcome") ui.view = "all";
     Object.assign(ui, { q: p.get("q"), scope: p.get("scope") || "all", focus: null });
     $("search").value = ui.q;
     return render();
   }
-  go(["cleanup", "settings", "welcome", "bin", "inbox"].includes(raw) ? raw : "all");
+  go(["cleanup", "settings", "bin", "inbox"].includes(raw) ? raw : "all");
 }
 
 /* Wiring */
@@ -1079,7 +1004,7 @@ document.addEventListener("keydown", (e) => {
     else if (selected.size) { selected.clear(); refreshBoxes(); }
     return;
   }
-  if (typing || ui.view === "welcome") return;
+  if (typing) return;
   const listView = ui.q || !["cleanup", "bin", "settings"].includes(ui.view);
   if (e.key === "/") { e.preventDefault(); $("search").focus(); }
   else if (listView && (e.key === "ArrowDown" || e.key === "j")) { e.preventDefault(); moveFocus(1); }

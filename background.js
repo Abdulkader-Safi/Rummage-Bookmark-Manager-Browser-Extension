@@ -9,8 +9,7 @@ async function ensureAlarms() {
 }
 ensureAlarms();
 
-chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason === "install") await chrome.tabs.create({ url: "chrome://bookmarks/#welcome" });
+chrome.runtime.onInstalled.addListener(async () => {
   // Also on update: reloading an unpacked copy counts as one, and older installs had no opens yet.
   if (!(await db.keys("opens")).length) await seedOpens();
 });
@@ -169,9 +168,8 @@ async function visit(job) {
   }
   await db.put("links", job.k, { noText: p?.noText, ...rec });
 
-  // The first-run page shows these as a live feed; the write also keeps the worker awake.
-  const { recent = [] } = await chrome.storage.local.get("recent");
-  await chrome.storage.local.set({ recent: [{ url: shortUrl(job.url), words, code: rec.code, at: Date.now() }, ...recent].slice(0, 6) });
+  // A storage write per page keeps the worker awake through a long run.
+  await chrome.storage.local.set({ lastCrawl: Date.now() });
 }
 
 async function wayback(url) {
