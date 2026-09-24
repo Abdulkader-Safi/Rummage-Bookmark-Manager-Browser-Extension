@@ -6,7 +6,7 @@ import { h, icon, fav, tagInput, captureText } from "./ui.js";
 const manual = new URLSearchParams(location.search).has("manual");
 const pop = document.getElementById("pop");
 const close = () => (manual ? parent.postMessage("rummage:close", location.origin) : window.close());
-const openPage = (hash = "") => { chrome.tabs.create({ url: chrome.runtime.getURL(`page.html${hash}`) }); close(); };
+const openPage = (hash = "") => { chrome.tabs.create({ url: `chrome://bookmarks/${hash}` }); close(); };
 
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 

@@ -21,7 +21,7 @@ window.addEventListener("blur", close);
       close();
     },
     goTo: async (hash) => {
-      await chrome.tabs.create({ url: chrome.runtime.getURL(`page.html${hash ? "#" + hash : ""}`) });
+      await chrome.tabs.create({ url: `chrome://bookmarks/${hash ? "#" + hash : ""}` });
       close();
     },
   }));

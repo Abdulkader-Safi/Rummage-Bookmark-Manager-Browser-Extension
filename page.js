@@ -1099,7 +1099,7 @@ setInterval(() => { $("sync-note").textContent = `Both ways, updated ${sinceText
   $("bulk-move").replaceChildren(new Option("Move to folder", ""), ...lib.folders.map((f) => new Option(f.path, f.id)));
   if (location.hash) {
     const hash = location.hash;
-    history.replaceState(null, "", location.pathname);
+    history.replaceState(null, "", location.href.split("#")[0]);
     applyHash(hash);
   } else render();
 })();

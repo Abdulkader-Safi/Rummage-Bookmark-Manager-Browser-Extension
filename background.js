@@ -10,7 +10,7 @@ async function ensureAlarms() {
 ensureAlarms();
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason === "install") await chrome.tabs.create({ url: "page.html#welcome" });
+  if (reason === "install") await chrome.tabs.create({ url: "chrome://bookmarks/#welcome" });
   // Also on update: reloading an unpacked copy counts as one, and older installs had no opens yet.
   if (!(await db.keys("opens")).length) await seedOpens();
 });
@@ -219,7 +219,7 @@ chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
   suggest(hits.map((b) => ({ content: b.url, description: `${xml(b.title)} <dim>${xml(shortUrl(b.url))}</dim>` })));
 });
 chrome.omnibox.onInputEntered.addListener((text, disposition) => {
-  const url = /^(https?|ftp|file):/i.test(text) ? text : chrome.runtime.getURL(`page.html#q=${encodeURIComponent(text)}`);
+  const url = /^(https?|ftp|file):/i.test(text) ? text : `chrome://bookmarks/#q=${encodeURIComponent(text)}`;
   if (disposition === "currentTab") chrome.tabs.update({ url });
   else chrome.tabs.create({ url, active: disposition === "newForegroundTab" });
 });
