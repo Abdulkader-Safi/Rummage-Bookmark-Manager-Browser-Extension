@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Bookmark Manager",
+  "version": "1.0",
+  "description": "Opens a full page listing all your bookmarks.",
+  "permissions": [
+    "bookmarks",
+    "favicon"
+  ],
+  "action": {
+    "default_title": "Open bookmarks"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "bookmarks": "page.html"
+  }
+}
