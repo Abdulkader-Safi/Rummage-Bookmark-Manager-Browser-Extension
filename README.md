@@ -54,8 +54,6 @@ Page search and link checks are off until you turn them on, and Chrome asks for 
 
 Rummage reads your browsing history for one thing: counting how often you opened each bookmark.
 
-The full policy is in [PRIVACY.md](PRIVACY.md).
-
 ## Limits
 
 These are real, and worth knowing before you trust a clean-up list.
