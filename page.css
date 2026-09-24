@@ -175,7 +175,10 @@ body.app { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 20px
 .twisty .i { width: 16px; height: 16px; transform: rotate(-90deg); transition: transform 0.12s; }
 .twisty[aria-expanded="true"] .i { transform: none; }
 .spacer { flex: 1; min-height: 12px; }
-.sync-card { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-inner); background: var(--surface-page); color: var(--text-brand); }
+.credit { padding: 0 14px 8px; color: var(--text-secondary); font-size: 13px; line-height: 1.6; }
+.credit a { color: var(--text-brand); font-weight: 600; text-decoration: none; }
+.credit a:hover { text-decoration: underline; }
+.sync-card {display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-inner); background: var(--surface-page); color: var(--text-brand); }
 .sync-card b { display: block; color: var(--text-primary); font-size: 14px; font-weight: 600; }
 .sync-card span { color: var(--text-secondary); font-size: 13px; }
 

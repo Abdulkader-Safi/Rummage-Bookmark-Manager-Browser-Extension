@@ -82,3 +82,16 @@ icons/           Logo, extension icons and the icon set
 ```
 
 There is no build step and no dependencies. The design comes from the Rummage Figma file: Funnel Display and Funnel Sans, one lime accent, and white cards on a paper background.
+
+## Developer
+
+Built by [Abdulkader Safi](https://abdulkadersafi.com/?utm_source=rummage&utm_medium=readme&utm_campaign=github).
+
+## Support
+
+If this extension is useful, you can support the work at
+[ko-fi.com/abdulkadersafi](https://ko-fi.com/abdulkadersafi).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
